@@ -1,15 +1,13 @@
-const csvFilePath = "data/Student mental health.csv";
-
-// Load CSV data and create bar graph and pie chart
 Promise.all([
-  d3.csv(csvFilePath),
+  d3.csv("data/Student mental health.csv"),
   d3.select("#pie-container"),
   d3.select("#bar-container"),
+  d3.select("#sankey-container"),
 ])
-  .then(function ([info, pieContainer, barContainer]) {
+  .then(function ([info, pieContainer, barContainer, sankeyContainer]) {
     // Bar Graph
-    const cgpaCounts = info.reduce((counts, entry) => {
-      const cgpaRange = entry["What is your CGPA?"];
+    const cgpaCounts = info.reducgite((counts, entry) => {
+      const cgpaRange = entry["What is your CGPA?"].trim();
       if (cgpaRange) {
         const range = cgpaRange;
         counts[range] = (counts[range] || 0) + 1;
@@ -22,8 +20,8 @@ Promise.all([
       count: cgpaCounts[range],
     }));
 
-    const barWidth = 500; // Reduce width
-    const barHeight = 250; // Increase height slightly
+    const barWidth = 500;
+    const barHeight = 250;
     const barMargin = { top: 30, right: 30, bottom: 60, left: 60 };
 
     const barSvg = barContainer
@@ -82,8 +80,8 @@ Promise.all([
       count: depressionCounts[status],
     }));
 
-    const pieWidth = 300; // Reduce width
-    const pieHeight = 200; // Reduce height
+    const pieWidth = 300;
+    const pieHeight = 200;
     const radius = Math.min(pieWidth, pieHeight) / 2;
 
     const pieSvg = pieContainer
