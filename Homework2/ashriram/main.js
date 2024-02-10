@@ -6,7 +6,7 @@ Promise.all([
 ])
   .then(function ([info, pieContainer, barContainer, sankeyContainer]) {
     // Bar Graph
-    const cgpaCounts = info.reducgite((counts, entry) => {
+    const cgpaCounts = info.reduce((counts, entry) => {
       const cgpaRange = entry["What is your CGPA?"].trim();
       if (cgpaRange) {
         const range = cgpaRange;
