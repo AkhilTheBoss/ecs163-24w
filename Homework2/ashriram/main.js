@@ -123,6 +123,140 @@ Promise.all([
       .attr("dy", "0.35em")
       .text((d) => `${d.data.status} (${d.data.count})`)
       .style("text-anchor", "middle");
+
+    // Sankey Diagram
+    const counts = {};
+
+    // Iterate over the CSV data
+    info.forEach((row) => {
+      const source = row["What is your course?"];
+      const target = row["What is your CGPA?"];
+
+      // Create a key for the combination of source and target
+      const key = `${source}!${target}`;
+
+      // Increment the count for the key, or initialize it to 1 if it doesn't exist
+      counts[key] = (counts[key] || 0) + 1;
+    });
+
+    // Convert the counts object into an array of objects
+    const preprocessedData = Object.entries(counts).map(([key, value]) => {
+      const [source, target] = key.split("!");
+      return { source, target, value };
+    });
+
+    const dimensions = {
+      width: 600,
+      height: 600,
+      margins: 10,
+    };
+
+    const sankeyData = { nodes: [], links: [] };
+    preprocessedData.forEach((d) => {
+      const nodesList = sankeyData.nodes.map((n) => n.name);
+      if (!nodesList.includes(d.source)) {
+        sankeyData.nodes.push({ name: d.source });
+      }
+      if (!nodesList.includes(d.target)) {
+        sankeyData.nodes.push({ name: d.target });
+      }
+      sankeyData.links.push({
+        source: d.source,
+        target: d.target,
+        value: d.value,
+      });
+    });
+    sankeyData.links.forEach((l, x) => {
+      sankeyData.links[x].source = sankeyData.nodes.findIndex(
+        (n) => n.name === l.source
+      );
+      sankeyData.links[x].target = sankeyData.nodes.findIndex(
+        (n) => n.name === l.target
+      );
+    });
+
+    // Initialize color scale after sankeyData is computed
+    const colorScale = d3
+      .scaleOrdinal()
+      .domain(sankeyData.nodes.map((n) => n.name))
+      .range(["lightblue", "purple", "green", "grey"]);
+
+    const sankey = d3
+      .sankey()
+      .nodes(sankeyData.nodes)
+      .links(sankeyData.links)
+      .nodeAlign(d3.sankeyLeft)
+      .extent([
+        [dimensions.margins, dimensions.margins],
+        [
+          dimensions.width - dimensions.margins,
+          dimensions.height - dimensions.margins,
+        ],
+      ]);
+
+    const svg = d3
+      .create("svg")
+      .attr("height", dimensions.height)
+      .attr("width", dimensions.width)
+      .attr("overflow", "visible");
+
+    const chart = svg
+      .append("g")
+      .attr(
+        "transform",
+        `translate(${dimensions.margins}, ${dimensions.margins})`
+      );
+
+    chart
+      .append("text")
+      .text("Sankey Diagram")
+      .attr("dominant-baseline", "middle")
+      .attr("font-weight", "600");
+
+    // Compute the layout
+    const { nodes, links } = sankey();
+
+    // Append nodes to the SVG
+    chart
+      .selectAll("rect")
+      .data(nodes)
+      .join("rect")
+      .attr("x", (d) => d.x0)
+      .attr("y", (d) => d.y0)
+      .attr("fill", (d) => colorScale(d.name))
+      .attr("height", (d) => d.y1 - d.y0)
+      .attr("width", (d) => d.x1 - d.x0);
+
+    // Append links to the SVG
+    chart
+      .append("g")
+      .attr("fill", "none")
+      .attr("stroke", "#000")
+      .attr("stroke-opacity", 0.1)
+      .selectAll("path")
+      .data(links)
+      .join("path")
+      .attr("d", d3.sankeyLinkHorizontal())
+      .attr("stroke-width", (d) => d.width);
+
+    // Append labels to the SVG
+    chart
+      .append("g")
+      .selectAll("text")
+      .data(sankeyData.nodes)
+      .join("text")
+      .text((d) => d.name)
+      .attr("class", (d) => d.depth)
+      .attr("x", (d) => d3.mean([d.x0, d.x1]))
+      .attr("y", (d) => d3.mean([d.y0, d.y1]))
+      .attr("fill", (d) => (d.y1 - d.y0 < 20 ? "black" : "white"))
+      .attr("font-family", "helvetica")
+      .attr("font-weight", "100")
+      .attr("font-size", "10")
+      .style("text-shadow", ".5px .5px 2px #222");
+
+    // Append the SVG to the container
+    sankeyContainer.node().appendChild(svg.node());
   })
   .catch(function (error) {
     console.error("Error loading data:", error);
