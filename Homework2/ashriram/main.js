@@ -66,6 +66,46 @@ Promise.all([
       .attr("transform", `translate(${barMargin.left},0)`)
       .call(d3.axisLeft(y));
 
+    barSvg
+      .append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 0)
+      .attr("x", 0 - barHeight / 2)
+      .attr("dy", "1em")
+      .style("text-anchor", "middle")
+      .text("Number of Students");
+
+    barSvg
+      .append("text")
+      .attr("x", barWidth / 2)
+      .attr("y", barMargin.top / 2)
+      .attr("text-anchor", "middle")
+      .attr("fill", "black")
+      .style("font-size", "18px")
+      .text("Number of Students vs GPA Range");
+
+    barSvg
+      .append("rect")
+      .attr("x", barWidth - barMargin.right - 10)
+      .attr("y", barMargin.top + 4)
+      .attr("width", 10)
+      .attr("height", 10)
+      .attr("fill", "royalblue");
+
+    barSvg
+      .append("text")
+      .attr("x", barWidth - barMargin.right - 30)
+      .attr("y", barMargin.top + 15)
+      .style("text-anchor", "end")
+      .text("GPA Range");
+
+    barSvg
+      .append("text")
+      .attr("x", barWidth / 2)
+      .attr("y", barHeight + barMargin.bottom - 80)
+      .style("text-anchor", "middle")
+      .text("GPA Range");
+
     // Pie Chart
     const depressionCounts = info.reduce((counts, entry) => {
       const depression = entry["Do you have Depression?"];
